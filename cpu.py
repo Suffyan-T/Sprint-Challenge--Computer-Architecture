@@ -6,7 +6,7 @@ PRN = 0b01000111  # PRN R0, 71
 HLT = 0b00000001  # HLT
 MUL = 0b10100010  # Multiply
 ADD = 0b10100000  # Addition
-PUSH = 0b01000101
+PUSH = 0b01000101 
 POP = 0b01000110
 RET = 0b00010001
 CALL = 0b01010000
@@ -198,6 +198,70 @@ class CPU:
                 self.pc = self.ram_read(self.reg[SP])
                 self.reg[SP] += 1  
 
+            # CMP 
+            elif op == CMP:
+                # Get next 2 values in program
+                reg_a = self.ram_read(self.pc + 1)
+                reg_b = self.ram_read(self.pc + 2)
+                # From register grab value each
+                val_a = self.reg[reg_a]
+                val_b = self.reg[reg_b]
+                # compare values
+                # if equal, set flag to 1
+                if val_a == val_b:
+                    self.flags = 0b1
+                # if a > b, set flag equal to 2
+                elif val_b > val_b:
+                    self.flags = 0b10
+                # if b > a, set flag to 4
+                elif val_b > val_a:
+                    self.flags = 0b100
+                # increment pc by 3
+                self.pc += 3
+
+            # JMP
+            elif op == JMP:
+                # read next arg from ram
+                reg_a = self.ram_read(self.pc + 1)
+                # set pc equal to value in register at index of arg
+                self.pc = self.reg[reg_a]
+
+            # JEQ
+            elif op == JEQ:
+                # check if equal flag is on
+                # if not ...
+                if not self.flags & 0b1:
+                    # increment pc by 2 
+                    self.pc += 2
+                # if yes
+                elif self.flags & 0B1:
+                    # read next arg from ram
+                    reg_a = self.ram_read(self.pc + 1)
+                    #set pc equal to value in register at index of arg
+                    self.pc = self.reg[reg_a]
+
+            # JNE
+            elif op == JNE:
+                # check if equal flag on
+                # if yes
+                if self.flags & 0b1:
+                    # increment pc by 2
+                    self.pc += 2
+                # if not
+                elif not self.flags & 0b0:
+                    # read next arg from ram
+                    reg_a = self.ram_read(self.pc + 1)
+                    # set pc equal to value in register at index of arg
+                    self.pc = self.reg[reg_a]
+
+                
+
+            elif op == HLT:
+                sys.exit(1)
+
+            else:
+                print("ERR: Unknown input:\t", op)
+                sys.exit(1)
 if len(sys.argv) == 2:
     filename = sys.argv[1]
 
@@ -208,4 +272,3 @@ else:
     print("""ERR: PLEASE PROVIDE A FILE NAME\n
     ex python cpu.py examples/FILENAME""")
     sys.exit(1)
-            
